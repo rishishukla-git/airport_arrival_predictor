@@ -1,0 +1,13 @@
+month_id,month_name,season_category,traffic_multiplier,description
+1,January,Off-Peak,0.85,Post-holiday lull
+2,February,Off-Peak,0.85,Generally quiet
+3,March,Shoulder,0.95,Traffic begins warming up
+4,April,Shoulder-High,1.10,Easter holidays spike
+5,May,Shoulder,1.00,Standard baseline month
+6,June,Peak-Early,1.20,Summer travel begins
+7,July,Peak-High,1.40,UK school summer holidays
+8,August,Peak-High,1.45,Busiest month of the year
+9,September,Shoulder,1.05,Back to school and business travel
+10,October,Shoulder-High,1.10,Autumn half-term holidays
+11,November,Off-Peak,0.80,Quietest month
+12,December,Peak-Holiday,1.30,Christmas rush
