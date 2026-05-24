@@ -1,0 +1,13 @@
+airport_id,airport_name,terminal_number,airport_code,size_factor,avg_annual_sec_time,avg_annual_checkin_time
+1,London Heathrow,Terminal 2,LHR,1.40,7,12
+2,London Heathrow,Terminal 3,LHR,1.50,8,15
+3,London Heathrow,Terminal 4,LHR,1.30,7,12
+4,London Heathrow,Terminal 5,LHR,1.50,6,10
+5,London Gatwick,North Terminal,LGW,1.20,7,10
+6,London Gatwick,South Terminal,LGW,1.20,7,12
+7,Manchester,Terminal 1,MAN,1.10,9,12
+8,Manchester,Terminal 2,MAN,1.10,9,10
+9,London City,Main Terminal,LCY,0.40,5,5
+10,Birmingham,Main Terminal,BHX,0.90,11,10
+11,London Stansted,Main Terminal,STN,1.10,9,12
+12,London Luton,Main Terminal,LTN,1.00,6,10
