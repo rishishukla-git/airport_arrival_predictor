@@ -1,9 +1,11 @@
 Airport Arrival Time Predictor (Analytics Engineering Portfolio)
 
-## Overview
-"When should I leave for the airport?" is a classic logistics problem. This project is an end-to-end data architecture and predictive model designed to calculate the optimal arrival time for passengers at major UK airports.
+# Smart Airport Arrival Time Predictor (Analytics Engineering Portfolio)
 
-Rather than relying on the standard "arrive 2 hours early" advice, this model uses reverse scheduling. It calculates a dynamic arrival time based on static airport layouts, real-world historical security queue data (UK CAA), and simulated live flight volumes.
+## Overview
+"When should I leave for the airport?" is a classic logistics problem. This project is an end-to-end data architecture and predictive model designed to calculate the optimal arrival time for passengers at major UK airports. 
+
+Rather than relying on static advice (e.g., "arrive 2 hours early"), this model uses reverse scheduling. It dynamically calculates arrival times based on terminal layouts, real-world baseline security data, and predictive hourly/seasonal queue multipliers.
 
 ## Project Goals
 As an Analytics Engineer, I built this project to demonstrate:
@@ -13,6 +15,13 @@ Dimensional Data Modeling: Designing a scalable Star Schema (Fact and Dimension 
 Data Transformation: Processing and weighting real-world survey data into usable baseline metrics.
 
 Predictive Analytics: Establishing a mathematical framework to predict queue bottlenecks based on terminal capacity and concurrent departure volumes.
+
+## Data Sources & Business Logic Assumptions
+This model is built on realistic operational assumptions and public data:
+* **Baseline Queue Data:** Terminal-specific baseline check-in and security wait times are modeled using publicly available aviation data from the **UK Government Civil Aviation Authority (CAA)**.
+* **Walking/Transit Times:** A standard 15-minute gate walk is dynamically multiplied by an `airport_size_factor` (e.g., Heathrow Terminal 5 takes significantly longer to traverse than London City).
+* **Gate Closure Rules:** 45 minutes prior to departure for Long-Haul flights; 30 minutes for Short-Haul/Domestic flights.
+* **Dynamic Safety Buffer:** The model applies a flexible safety margin calculated as `MAX(10% of total transit time, 15 minutes)`. This ensures small flights get a minimum 15-minute pad, while complex long-haul itineraries receive proportionally larger safety nets.
 
 ## The Core Logistics Model
 The target arrival time is calculated using a series of sequential durations:
@@ -27,13 +36,19 @@ $$T_{arrive} = T_{std} - \Delta t_{gate\_close} - \Delta t_{transit} - \Delta t_
 * **Δt_checkin:** Time spent checking bags (equals 0 if hand-luggage only).
 * **Δt_buffer:** Dynamic safety margin (10-15% of total ETA times).
 
-## Data Architecture (Star Schema)
-This project utilizes a traditional Star Schema built with SQL to organize the data for efficient modeling.
+## Data Architecture
+This project utilizes a robust **Star Schema** built with SQL to organize the data for efficient modeling, pushing complex mathematical computation directly into the database via SQL Views.
 
-## Tech Stack
+### Schema Breakdown:
+* `dim_airport`: Static terminal data, physical size factors, and UK CAA baseline queue times.
+* `dim_seasonality`: Monthly traffic multipliers and descriptions.
+* `fact_flights`: A static daily timetable of scheduled departures, aircraft haul types, and passenger capacities.
+* `vw_flight_itineraries`: The master analytical view that handles all feature engineering and duration math.
 
+## Tech Stack & Skills Demonstrated
 * **Data Architecture:** Star Schema Design (Fact and Dimension modeling) optimized for analytical queries.
-* **SQL:** Data Definition Language (DDL) for robust database structuring, including strict constraint management (Primary Keys) and optimized data types.
-* **Data Engineering Concepts:** Utilization of CSV Seed Files for static dimension loading, simulating modern data warehouse staging practices (similar to dbt workflows).
+* **Advanced SQL:** DDL, Common Table Expressions (CTEs), Window Functions, and complex conditional aggregations.
+* **Data Engineering Workflow:** CSV Seed Files for staging simulated modern data warehouse workflows.
+* **Application Layer:** Interactive Python CLI using `sqlite3` to orchestrate in-memory database queries.
 * **Analytical Modeling:** Mathematical reverse-scheduling logic and weighted average baseline calculations derived from real-world survey datasets.
-* **Version Control:** Git & GitHub (Command-line workflows, modular directory structuring, and repository management).
+* **Version Control:** Git & GitHub (modular directory structuring and iterative logic deployment).
