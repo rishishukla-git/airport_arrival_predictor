@@ -1,6 +1,6 @@
 Airport Arrival Time Predictor (Analytics Engineering Portfolio)
 
-# Smart Airport Arrival Time Predictor (Analytics Engineering Portfolio)
+# Smart Airport Arrival Time Predictor
 
 ## Overview
 "When should I leave for the airport?" is a classic logistics problem. This project is an end-to-end data architecture and predictive model designed to calculate the optimal arrival time for passengers at major UK airports. 
