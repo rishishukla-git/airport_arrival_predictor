@@ -34,7 +34,7 @@ BaseVariables AS (
         CAST(ROUND(a.avg_annual_checkin_time * c.hourly_traffic_multiplier * s.traffic_multiplier) AS INT) AS dt_checkin,
         CAST(ROUND(a.avg_annual_sec_time * c.hourly_traffic_multiplier * s.traffic_multiplier) AS INT) AS dt_security,
         
-        15 AS dt_transit,
+        CAST(ROUND(15 * a.size_factor) AS INT) AS dt_transit,
         CASE WHEN f.haul_type = 'Long-Haul' THEN 45 ELSE 30 END AS dt_gate_close
     FROM fact_flights f
     JOIN dim_airport a 

@@ -1,24 +1,34 @@
 import sqlite3
 import csv
+import os
 
-def load_csv_to_table(cursor, table_name, file_path, columns):
-    """Helper function to load CSV data into SQLite"""
+# 1. Automatically find the exact path of your project
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+
+def load_csv_to_table(cursor, table_name, file_name, columns):
+    """Helper function to load CSV data into SQLite using bulletproof paths"""
     cursor.execute(f"CREATE TABLE {table_name} ({columns})")
-    with open(file_path, 'r') as file:
+    
+    # Safely construct the exact path to the Data folder
+    absolute_path = os.path.join(PROJECT_ROOT, 'Data', file_name)
+    
+    with open(absolute_path, 'r') as file:
         reader = csv.reader(file)
         next(reader)
         cursor.executemany(f"INSERT INTO {table_name} VALUES ({','.join(['?']*len(columns.split(',')))})", reader)
 
 print("✈️ Booting up Airport Arrival Calculator...")
 
-# 1. Boot up the temporary database & load data
+# 2. Boot up the temporary database & load data
 conn = sqlite3.connect(':memory:')
 cursor = conn.cursor()
-load_csv_to_table(cursor, 'dim_seasonality', '../Data/dim_seasonality.csv', 'month_id INT, month_name TEXT, season_category TEXT, traffic_multiplier REAL, description TEXT')
-load_csv_to_table(cursor, 'dim_airport', '../Data/dim_airport.csv', 'airport_id INT, airport_name TEXT, terminal_number TEXT, airport_code TEXT, size_factor REAL, avg_annual_sec_time INT, avg_annual_checkin_time INT')
-load_csv_to_table(cursor, 'fact_flights', '../Data/fact_flights.csv', 'flight_id INT, flight_number TEXT, airport_id INT, destination_code TEXT, haul_type TEXT, departure_time TEXT, departure_hour INT, passenger_capacity INT')
 
-# 2. Load the Base Passenger View
+load_csv_to_table(cursor, 'dim_seasonality', 'dim_seasonality.csv', 'month_id INT, month_name TEXT, season_category TEXT, traffic_multiplier REAL, description TEXT')
+load_csv_to_table(cursor, 'dim_airport', 'dim_airport.csv', 'airport_id INT, airport_name TEXT, terminal_number TEXT, airport_code TEXT, size_factor REAL, avg_annual_sec_time INT, avg_annual_checkin_time INT')
+load_csv_to_table(cursor, 'fact_flights', 'fact_flights.csv', 'flight_id INT, flight_number TEXT, airport_id INT, destination_code TEXT, haul_type TEXT, departure_time TEXT, departure_hour INT, passenger_capacity INT')
+
+# 3. Create the Base Passenger View (This is what went missing!)
 cursor.execute("""
 CREATE VIEW vw_hourly_passenger_load AS
 SELECT a.airport_id, f.departure_hour, SUM(f.passenger_capacity) AS total_passenger_load
@@ -27,7 +37,7 @@ JOIN dim_airport a ON f.airport_id = a.airport_id
 GROUP BY a.airport_id, f.departure_hour;
 """)
 
-# 3. Load the Master Itinerary View (Exactly as you wrote it)
+# 4. Create the Master Itinerary View
 cursor.execute("""
 CREATE VIEW vw_flight_itineraries AS
 WITH RollingMultipliers AS (
@@ -44,7 +54,7 @@ BaseVariables AS (
     SELECT f.flight_number, a.airport_name, a.terminal_number, f.haul_type, f.departure_time, s.month_id, s.month_name,
            CAST(ROUND(a.avg_annual_checkin_time * c.hourly_traffic_multiplier * s.traffic_multiplier) AS INT) AS dt_checkin,
            CAST(ROUND(a.avg_annual_sec_time * c.hourly_traffic_multiplier * s.traffic_multiplier) AS INT) AS dt_security,
-           15 AS dt_transit,
+           CAST(ROUND(15 * a.size_factor) AS INT) AS dt_transit,
            CASE WHEN f.haul_type = 'Long-Haul' THEN 45 ELSE 30 END AS dt_gate_close
     FROM fact_flights f
     JOIN dim_airport a ON f.airport_id = a.airport_id
@@ -67,7 +77,7 @@ SELECT flight_number, airport_name, terminal_number, haul_type, departure_time, 
 FROM BufferMath;
 """)
 
-# 4. The Interactive User Interface
+# 5. The Interactive User Interface
 print("\n" + "="*50)
 print("   WELCOME TO THE SMART DEPARTURE CALCULATOR")
 print("="*50)
@@ -80,7 +90,7 @@ user_flight = input(f"Enter your Flight Number (e.g., {hint_flight}): ").strip()
 user_month = input("Enter your Travel Month (e.g., August): ").strip().capitalize()
 user_bags = input("Are you checking a bag? (Y/N): ").strip().upper()
 
-# 5. Ask SQL for the exact answer!
+# 6. Ask SQL for the exact answer!
 cursor.execute("""
     SELECT * FROM vw_flight_itineraries 
     WHERE flight_number = ? AND month_name = ?
